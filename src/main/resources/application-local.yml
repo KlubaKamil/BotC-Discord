@@ -1,18 +1,6 @@
 spring:
-  datasource:
-    driverClassName: org.h2.Driver
-    url: jdbc:h2:mem:testdb
-    username: sa
-    password:
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    hibernate:
-      ddl-auto: update
-    defer-datasource-initialization: true
-  h2:
-    console:
-      enabled: true
-      path: /guest/h2-console
+  kafka:
+    bootstrap-servers: localhost:9092
 
 discord:
   token: ${DISCORD_TOKEN}

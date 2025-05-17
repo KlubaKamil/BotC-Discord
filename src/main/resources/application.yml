@@ -1,3 +1,16 @@
 spring:
   application:
     name: BotC-Discord
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: my-group
+      auto-offset-reset: earliest
+
+kafka:
+  topics:
+    notification: notificationtopic
+    channels: channelstopic
+    channels-response: channelsresponsetopic
