@@ -4,6 +4,7 @@ import com.czachodym.botcshared.dto.DiscordChannel;
 import com.czachodym.botcshared.dto.DiscordGuild;
 import com.czachodym.botcshared.dto.DiscordNotification;
 import com.czachodym.botcshared.dto.DiscordThread;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
@@ -44,28 +45,32 @@ public class DiscordService extends ListenerAdapter {
                 .map(g -> DiscordGuild.builder()
                         .id(g.getId())
                         .name(g.getName())
-                        .channels(getDiscordChannels(g))
+                        .channels(getDiscordChannels(g, g.getName().toLowerCase().contains("blood")))
                         .build())
                 .toList();
     }
 
-    private List<DiscordChannel> getDiscordChannels(Guild guild){
+    private List<DiscordChannel> getDiscordChannels(Guild guild, boolean returnAll){
         return guild.getChannels().stream()
-                .filter(c -> (c.getType() == ChannelType.TEXT && ((TextChannel)c).canTalk()) ||
-                        c.getType() == ChannelType.FORUM)
+                .filter(c -> ((c.getType() == ChannelType.TEXT && ((TextChannel)c).canTalk() && (returnAll || c.getName().toLowerCase().contains("blood"))) ||
+                        c.getType() == ChannelType.FORUM))
                 .map(c -> DiscordChannel.builder()
                         .id(c.getId())
                         .name(c.getName())
                         .channelType(c.getType())
-                        .threads(getDiscordThreads(c))
+                        .threads(getDiscordThreads(c, c.getName().toLowerCase().contains("blood")))
                         .build())
+                .filter(dc -> dc.threads().size() > 0)
                 .toList();
     }
 
-    private List<DiscordThread> getDiscordThreads(GuildChannel channel){
+    private List<DiscordThread> getDiscordThreads(GuildChannel channel, boolean returnAll){
+        if(channel.getType() == ChannelType.FORUM) {
+            ((ForumChannel)channel).retrieveArchivedPublicThreadChannels().queue();
+        }
         return channel.getType() != ChannelType.FORUM ? List.of() :
                 ((ForumChannel)channel).getThreadChannels().stream()
-                        .filter(ThreadChannel::canTalk)
+                        .filter(t -> t.canTalk() && (returnAll || t.getName().toLowerCase().contains("blood")))
                         .map(t -> DiscordThread.builder()
                                 .id(t.getId())
                                 .name(t.getName())
