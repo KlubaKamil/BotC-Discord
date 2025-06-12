@@ -8,6 +8,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.ForumChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -60,23 +63,35 @@ public class DiscordService extends ListenerAdapter {
                         .channelType(c.getType())
                         .threads(getDiscordThreads(c, c.getName().toLowerCase().contains("blood")))
                         .build())
-                .filter(dc -> dc.threads().size() > 0)
+                .filter(dc -> dc.channelType() != ChannelType.FORUM || dc.threads().size() > 0)
                 .toList();
     }
 
     private List<DiscordThread> getDiscordThreads(GuildChannel channel, boolean returnAll){
-        if(channel.getType() == ChannelType.FORUM) {
-            ((ForumChannel)channel).retrieveArchivedPublicThreadChannels().queue();
+        if (channel.getType() != ChannelType.FORUM) {
+            return List.of();
         }
-        return channel.getType() != ChannelType.FORUM ? List.of() :
-                ((ForumChannel)channel).getThreadChannels().stream()
-                        .filter(t -> t.canTalk() && (returnAll || t.getName().toLowerCase().contains("blood")))
-                        .map(t -> DiscordThread.builder()
-                                .id(t.getId())
-                                .name(t.getName())
-                                .channelType(t.getType())
-                                .build())
-                        .toList();
+        ForumChannel forum = (ForumChannel) channel;
+        List<ThreadChannel> allThreads = new ArrayList<>(forum.getThreadChannels());
+        try {
+            allThreads.addAll(forum.retrieveArchivedPublicThreadChannels().complete());
+        } catch (Exception ex) {
+            log.warn("Could not retrieve archived threads for {} – {}", forum.getName(), ex.getMessage());
+        }
+        return allThreads.stream()
+                .collect(Collectors.toMap(
+                        ISnowflake::getId,
+                        Function.identity(),
+                        (a, b) -> a))
+                .values()
+                .stream()
+                .filter(t -> t.canTalk() && (returnAll || t.getName().toLowerCase().contains("blood")))
+                .map(t -> DiscordThread.builder()
+                        .id(t.getId())
+                        .name(t.getName())
+                        .channelType(t.getType())
+                        .build())
+                .toList();
     }
 
     public void sendMessage(DiscordNotification discordNotification){
