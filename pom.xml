@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.czachodym</groupId>
     <artifactId>BotC-Discord</artifactId>
-    <version>1.4.0</version>
+    <version>1.5.1</version>
     <name>BotC-Discord</name>
     <description>Blood on the Clocktower discord bot</description>
     <url/>
@@ -28,10 +28,10 @@
     </scm>
 
     <properties>
-        <java.version>24</java.version>
+        <java.version>25</java.version>
         <mysql.version>8.0.33</mysql.version>
         <json.version>20250107</json.version>
-        <botc-shared.version>1.0.0</botc-shared.version>
+        <botc-shared.version>1.2.0</botc-shared.version>
         <lombok.version>1.18.38</lombok.version>
     </properties>
 
@@ -70,6 +70,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.czachodym.botcdiscord.BotCDiscord</mainClass>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -87,4 +90,15 @@
             </plugin>
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
+            <id>nexus</id>
+            <url>http://192.168.1.19:30801/repository/botc-releases/</url>
+        </repository>
+    </repositories>
 </project>

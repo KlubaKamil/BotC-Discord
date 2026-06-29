@@ -40,7 +40,7 @@ public class KafkaListenerService {
         JSONObject response = new JSONObject();
         response.put("correlationId", correlationId);
         try {
-            response.put("payload", new ObjectMapper().writeValueAsString(discordService.getDiscordGuilds()));
+            response.put("payload", new ObjectMapper().writeValueAsString(discordService.getDiscordGuildDtoList()));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
