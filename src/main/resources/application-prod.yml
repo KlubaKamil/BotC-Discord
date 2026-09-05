@@ -1,6 +1,14 @@
 spring:
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVER}:${KAFKA_BOOTSTRAP_PORT}
+  data:
+    mongodb:
+      host: ${SPRING_DATA_MONGODB_HOST}
+      port: 27017
+      database: ${SPRING_DATA_MONGODB_DATABASE}
+      username: ${SPRING_DATA_MONGODB_USERNAME}
+      password: ${SPRING_DATA_MONGODB_PASSWORD}
+      authentication-database: admin
 
 discord:
   token: ${DISCORD_TOKEN}

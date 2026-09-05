@@ -1,6 +1,7 @@
 package com.czachodym.botcdiscord.service;
 
 import com.czachodym.botcshared.dto.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
@@ -25,15 +26,10 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class DiscordService extends ListenerAdapter {
     private final JDA jda;
-
-    public DiscordService(JDA jda) {
-        this.jda = jda;
-
-//        jda.addEventListener(this);
-//        registerCommands(jda);
-    }
+    private final ImageService imageService;
 
 //    @Override
 //    public void onSlashCommandInteraction(SlashCommandInteractionEvent event){
@@ -126,11 +122,14 @@ public class DiscordService extends ListenerAdapter {
             if (channel == null) {
                 return;
             }
-            List<FileUpload> resources = discordNotification.resources().stream()
-                    .map(f -> FileUpload.fromData(f, id + ".jpg"))
-                    .toList();
-            if(!resources.isEmpty()) {
-                channel.sendFiles(resources).queue();
+            if(discordNotification.notificationType() == NotificationType.GAME){
+                List<byte[]> resource = imageService.getImages(discordNotification.id());
+                List<FileUpload> resources = resource.stream()
+                        .map(f -> FileUpload.fromData(f, id + ".jpg"))
+                        .toList();
+                if(!resources.isEmpty()) {
+                    channel.sendFiles(resources).queue();
+                }
             }
             for(String messagePart: messagesParts) {
                 channel.sendMessage(messagePart).queue();
